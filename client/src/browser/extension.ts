@@ -1,10 +1,8 @@
 // Copyright © 2022, SAS Institute Inc., Cary, NC, USA.  All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-import { ExtensionContext, Uri, commands } from "vscode";
+import { ExtensionContext, Uri, commands, workspace } from "vscode";
 import { LanguageClientOptions } from "vscode-languageclient";
 import { LanguageClient } from "vscode-languageclient/browser";
-import * as fs from "fs";
-import * as path from 'path';
 
 let client: LanguageClient;
 
@@ -43,18 +41,12 @@ function createWorkerLanguageClient(
   );
 }
 
-const getUserRootFolder = () => {
-  return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE || '';
-};
 
 export function deactivate(): Thenable<void> | undefined {
-  const filePath = path.join(getUserRootFolder(), `vscode.heartbeat`);
-  fs.writeFile(filePath, Date.now().toString(), (err) => {
-    if (err) {
-      console.error(err);
-    }
-  });
-
+	const folderUri = workspace.workspaceFolders[0].uri;
+	const fileUri = folderUri.with({ path: `${folderUri}/test.txt` });
+  workspace.fs.writeFile(fileUri,  new TextEncoder().encode(Date.now().toString()));
+  console.log("exiting..");
   if (!client) {
     return undefined;
   }
